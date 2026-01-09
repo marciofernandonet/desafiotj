@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bookcatalog.Data;
 
@@ -10,9 +11,11 @@ using bookcatalog.Data;
 namespace bookcatalog.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260109192948_AddPkInBookAuthor")]
+    partial class AddPkInBookAuthor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,51 +135,17 @@ namespace bookcatalog.Migrations
 
             modelBuilder.Entity("bookcatalog.Models.BookSubject", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("LivroId")
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AssuntoId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LivroId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
+                    b.HasKey("LivroId", "AssuntoId");
 
                     b.HasIndex("AssuntoId");
 
-                    b.HasIndex("LivroId", "AssuntoId")
-                        .IsUnique();
-
                     b.ToTable("LivroAssunto");
-                });
-
-            modelBuilder.Entity("bookcatalog.Models.SaleType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LivroId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Preco")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LivroId");
-
-                    b.ToTable("TipoVenda");
                 });
 
             modelBuilder.Entity("bookcatalog.Models.Subject", b =>
@@ -235,17 +204,6 @@ namespace bookcatalog.Migrations
                     b.Navigation("Livro");
                 });
 
-            modelBuilder.Entity("bookcatalog.Models.SaleType", b =>
-                {
-                    b.HasOne("bookcatalog.Models.Book", "Livro")
-                        .WithMany("TipoVenda")
-                        .HasForeignKey("LivroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Livro");
-                });
-
             modelBuilder.Entity("bookcatalog.Models.Author", b =>
                 {
                     b.Navigation("LivroAutor");
@@ -256,8 +214,6 @@ namespace bookcatalog.Migrations
                     b.Navigation("LivroAssunto");
 
                     b.Navigation("LivroAutor");
-
-                    b.Navigation("TipoVenda");
                 });
 
             modelBuilder.Entity("bookcatalog.Models.Subject", b =>

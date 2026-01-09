@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useMemo, useState } from 'react';
+import { RefObject, SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -12,7 +12,8 @@ import Button from '@mui/material/Button';
 import { IconifyIcon } from 'components/base/IconifyIcon';
 import api from "../../../service/api";
 import AccountDialog from '../account/common/AccountDialog';
-import { InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { InputLabel, MenuItem, Select, SnackbarCloseReason, TextField } from '@mui/material';
+import ProSnackbar from 'layouts/main-layout/common/ProSnackbar';
 
 interface BooksTableProps {
   apiRef: RefObject<GridApiCommunity | null>;
@@ -25,6 +26,12 @@ type Book = {
   editora: string;
   edicao: number;
   anoPublicacao: string;
+  livroAutor: {
+    autorId: number;
+  }[];
+  livroAssunto: {
+    assuntoId: number;
+  }[];
 };
 
 type Author = {
@@ -51,6 +58,8 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [index, setIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [error, setError] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
@@ -67,9 +76,19 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
     })();
   }, []);
 
-  const handleOpen = () => setOpen(!open);
   const handleOpenUpdate = () => setOpenUpdate(!openUpdate);
   const handleOpenDelete = () => setOpenDelete(!openDelete);
+
+  function handleOpen() {
+    setSubmitted(false);
+    setTitle("");
+    setPublisher("");
+    setEdition(0);
+    setYearPublic("");
+    setAuthor("");
+    setSubject("");
+    setOpen(!open);
+  }
 
   async function handleModalUpdate(index: number, id: number) {
     try{
@@ -78,11 +97,13 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
       setOpenUpdate(true);
       const response = await api.get(`book/${id}`);
       if(response.status === 200){
-        const { titulo, editora, edicao, anoPublicacao } = response.data.data;
+        const { titulo, editora, edicao, anoPublicacao, livroAutor, livroAssunto } = response.data.data as Book;  
         setTitle(titulo);
         setPublisher(editora);
         setEdition(edicao);
         setYearPublic(anoPublicacao);
+        setAuthor(String(livroAutor[0].autorId));
+        setSubject(String(livroAssunto[0].assuntoId));
       }
     }
     catch(error) {
@@ -97,10 +118,11 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
   }
 
   async function saveBook() {
+    const check = !title || !publisher || !edition || !yearPublic || !author || !subject;
     try {
       setSubmitted(true);
 
-      if (!title || !publisher || !edition || !yearPublic) {
+      if (check) {
         return;
       }
 
@@ -114,18 +136,24 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
       });
       const newBook = response.data.data;
       setBooks(prev => [...prev, newBook]);
+      setError(false);
       setOpen(false);
     }
     catch(error) {
+      setError(true);
       console.log(error);
+    }
+    finally {
+      if(!check) setOpenSnackbar(true);
     }
   }
 
   async function updateBook() {
+    const check = !title || !publisher || !edition || !yearPublic;
     try {
       setSubmitted(true);
 
-      if (!title || !publisher || !edition || !yearPublic) {
+      if (check) {
         return;
       }
       
@@ -134,7 +162,9 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
         titulo: title,
         editora: publisher,
         edicao: edition,
-        anoPublicacao: yearPublic
+        anoPublicacao: yearPublic,
+        autorId: author,
+        assuntoId: subject
       });
       const updateBook = response.data.data;
       setBooks(prev => [
@@ -145,7 +175,11 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
       setOpenUpdate(false);
     }
     catch(error) {
+      setError(true);
       console.log(error);
+    }
+    finally {
+      if(!check) setOpenSnackbar(true);
     }
   }
 
@@ -166,6 +200,11 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
       setOpenDelete(false);
     }
   }
+
+  const handleClose = (_event: SyntheticEvent, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') return;
+    setOpenSnackbar(false);
+  };
 
   const columns: GridColDef<Book>[] = useMemo(
     () => [
@@ -426,6 +465,42 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
             }}
             fullWidth
           />
+          <Box>
+            <InputLabel>Autor</InputLabel>
+            <Select
+              required
+              error={submitted && !author}
+              onChange={e => setAuthor(String(e.target.value))}
+              value={author}
+              displayEmpty
+              fullWidth
+            >
+              <MenuItem disabled>
+                Selecione
+              </MenuItem>
+              {authors.map(x => (
+                <MenuItem value={x.id}>{x.nome}</MenuItem>
+              ))}
+            </Select>
+          </Box>
+          <Box>
+            <InputLabel>Assunto</InputLabel>
+            <Select
+              required
+              error={submitted && !subject}
+              onChange={e => setSubject(String(e.target.value))}
+              value={subject}
+              displayEmpty
+              fullWidth
+            >
+              <MenuItem disabled>
+                Selecione
+              </MenuItem>
+              {subjects.map(x => (
+                <MenuItem value={x.id}>{x.descricao}</MenuItem>
+              ))}
+            </Select>
+          </Box>
         </Stack>
       </AccountDialog>
       
@@ -439,6 +514,7 @@ const BooksTable = ({ apiRef }: BooksTableProps) => {
         typeDelete
         sx={{ minWidth: 400, maxWidth: 600 }}
       />
+      <ProSnackbar open={openSnackbar} onClose={handleClose} error={error} />
     </Box>
   );
 };

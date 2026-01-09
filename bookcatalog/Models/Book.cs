@@ -18,4 +18,5 @@ public class Book
 
     public List<BookAuthor> LivroAutor { get; set; }
     public List<BookSubject> LivroAssunto { get; set; }
+    public List<SaleType> TipoVenda { get; set; }
 }

@@ -1,6 +1,7 @@
 using AutoMapper;
 using bookcatalog.Dtos.Author;
 using bookcatalog.Dtos.Book;
+using bookcatalog.Dtos.SaleType;
 using bookcatalog.Dtos.Subject;
 using bookcatalog.Models;
 
@@ -20,5 +21,11 @@ public class AutoMapperProfile : Profile
 
         CreateMap<Subject, GetSubjectDto>();
         CreateMap<AddSubjectDto, Subject>();
+
+        CreateMap<BookAuthor, GetBookAuthorDto>();
+        CreateMap<BookSubject, GetBookSubjectDto>();
+
+        CreateMap<SaleType, GetSaleTypeDto>();
+        CreateMap<AddSaleTypeDto, SaleType>();
     } 
 }

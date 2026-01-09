@@ -6,15 +6,17 @@ interface ProSnackbarProps {
   open: boolean;
   onClose: (event: SyntheticEvent | Event, reason?: SnackbarCloseReason) => void;
   message?: string;
-  icon?: string;
+  error?: boolean;
   duration?: number;
 }
+
+const mensageError = "Erro ao realizar operação";
 
 const ProSnackbar = ({
   open,
   onClose,
-  message = 'Upgrade to Pro for this feature',
-  icon = 'material-symbols:info-outline-rounded',
+  message = 'Operação realizada com sucesso!',
+  error,
   duration = 3000,
 }: ProSnackbarProps) => {
   return (
@@ -26,22 +28,16 @@ const ProSnackbar = ({
         vertical: 'bottom',
         horizontal: 'right',
       }}
+      slotProps={{
+        content: {
+          sx: {
+            backgroundColor: error ? "error.darker" : "info.darker"
+          },
+        },
+      }}
       message={
         <Stack gap={1} alignItems="center">
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              width: 40,
-              height: 40,
-              bgcolor: 'info.darker',
-              borderRadius: '50%',
-            }}
-          >
-            <IconifyIcon icon={icon} sx={{ fontSize: 20, color: 'info.main' }} />
-          </Stack>
-
-          <Typography variant="body2">{message}</Typography>
+          <Typography ml={2} variant="body2">{error ? mensageError : message}</Typography>
         </Stack>
       }
       action={

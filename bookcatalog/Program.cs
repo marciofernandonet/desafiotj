@@ -1,6 +1,7 @@
 using bookcatalog.Data;
 using bookcatalog.Services.AuthorService;
 using bookcatalog.Services.BookService;
+using bookcatalog.Services.SaleTypeService;
 using bookcatalog.Services.SubjectService;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
@@ -37,6 +38,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ISaleTypeService, SaleTypeService>();
 
 var app = builder.Build();
 

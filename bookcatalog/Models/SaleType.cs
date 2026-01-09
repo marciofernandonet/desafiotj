@@ -1,11 +1,10 @@
 namespace bookcatalog.Models;
-public class BookSubject
+
+public class SaleType
 {
     public int Id { get; set; }
-
+    public string Tipo { get; set; }
+    public decimal Preco { get; set; }
     public int LivroId { get; set; }
     public Book Livro { get; set; }
-
-    public int AssuntoId { get; set; }
-    public Subject Assunto { get; set; }
 }

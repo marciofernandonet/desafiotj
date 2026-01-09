@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useMemo, useState } from 'react';
+import { RefObject, SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -11,8 +11,9 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { IconifyIcon } from 'components/base/IconifyIcon';
 import AccountDialog from '../account/common/AccountDialog';
-import { TextField } from '@mui/material';
+import { SnackbarCloseReason, TextField } from '@mui/material';
 import api from "../../../service/api";
+import ProSnackbar from 'layouts/main-layout/common/ProSnackbar';
 
 interface UsersTableProps {
   apiRef: RefObject<GridApiCommunity | null>;
@@ -31,6 +32,8 @@ const AuthorsTable = ({ apiRef }: UsersTableProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [index, setIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [error, setError] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
@@ -41,9 +44,15 @@ const AuthorsTable = ({ apiRef }: UsersTableProps) => {
     })();
   }, []);
 
-  const handleOpen = () => setOpen(!open);
+  
   const handleOpenUpdate = () => setOpenUpdate(!openUpdate);
   const handleOpenDelete = () => setOpenDelete(!openDelete);
+
+  function handleOpen() {
+    setSubmitted(false);
+    setName("");
+    setOpen(!open);
+  }
 
   async function handleModalUpdate(index: number, id: number) {
     try{
@@ -80,10 +89,15 @@ const AuthorsTable = ({ apiRef }: UsersTableProps) => {
       });
       const newAuthor = response.data.data;
       setAuthors(prev => [...prev, newAuthor]);
+      setError(false);
       setOpen(false);
     }
     catch(error) {
+      setError(true);
       console.log(error);
+    }
+    finally {
+      if(name) setOpenSnackbar(true);
     }
   }
 
@@ -129,6 +143,11 @@ const AuthorsTable = ({ apiRef }: UsersTableProps) => {
       setOpenDelete(false);
     }
   }
+
+  const handleClose = (_event: SyntheticEvent, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') return;
+    setOpenSnackbar(false);
+  };
 
   async function handleGenerateReport() {
     const response = await fetch("http://localhost:5237/api/report/author");
@@ -289,6 +308,7 @@ const AuthorsTable = ({ apiRef }: UsersTableProps) => {
         typeDelete
         sx={{ minWidth: 400, maxWidth: 600 }}
       />
+      <ProSnackbar open={openSnackbar} onClose={handleClose} error={error} />
     </Box>
   );
 };

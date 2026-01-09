@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bookcatalog.Data;
 
@@ -10,9 +11,11 @@ using bookcatalog.Data;
 namespace bookcatalog.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260109205925_CreateSaleType")]
+    partial class CreateSaleType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,9 +165,6 @@ namespace bookcatalog.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("LivroId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Preco")
                         .HasColumnType("decimal(18,2)");
 
@@ -173,8 +173,6 @@ namespace bookcatalog.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LivroId");
 
                     b.ToTable("TipoVenda");
                 });
@@ -235,17 +233,6 @@ namespace bookcatalog.Migrations
                     b.Navigation("Livro");
                 });
 
-            modelBuilder.Entity("bookcatalog.Models.SaleType", b =>
-                {
-                    b.HasOne("bookcatalog.Models.Book", "Livro")
-                        .WithMany("TipoVenda")
-                        .HasForeignKey("LivroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Livro");
-                });
-
             modelBuilder.Entity("bookcatalog.Models.Author", b =>
                 {
                     b.Navigation("LivroAutor");
@@ -256,8 +243,6 @@ namespace bookcatalog.Migrations
                     b.Navigation("LivroAssunto");
 
                     b.Navigation("LivroAutor");
-
-                    b.Navigation("TipoVenda");
                 });
 
             modelBuilder.Entity("bookcatalog.Models.Subject", b =>

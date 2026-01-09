@@ -117,11 +117,21 @@ public class BookService : IBookService
 
         try
         {
-            Book dbBook = await _context.Livro.FirstAsync(x => x.Id == book.Id);
+            Book dbBook = await _context.Livro
+                                        .Include(x => x.LivroAutor)
+                                        .Include(x => x.LivroAssunto)
+                                        .FirstAsync(x => x.Id == book.Id);
+            
             dbBook.Titulo = book.Titulo;
             dbBook.Editora = book.Editora;
             dbBook.Edicao = book.Edicao;
             dbBook.AnoPublicacao = book.AnoPublicacao;
+
+            var livroAutor = dbBook.LivroAutor.FirstOrDefault();
+            livroAutor?.AutorId = book.AutorId;
+
+            var livroAssunto = dbBook.LivroAssunto.FirstOrDefault();
+            livroAssunto?.AssuntoId = book.AssuntoId;
 
             _context.Livro.Update(dbBook);
             await _context.SaveChangesAsync();

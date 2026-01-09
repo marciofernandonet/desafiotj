@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useMemo, useState } from 'react';
+import { RefObject, SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -11,8 +11,9 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { IconifyIcon } from 'components/base/IconifyIcon';
 import AccountDialog from '../account/common/AccountDialog';
-import { TextField } from '@mui/material';
+import { SnackbarCloseReason, TextField } from '@mui/material';
 import api from "../../../service/api";
+import ProSnackbar from 'layouts/main-layout/common/ProSnackbar';
 
 interface SubjectsTableProps {
   apiRef: RefObject<GridApiCommunity | null>;
@@ -31,6 +32,8 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [index, setIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [error, setError] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
@@ -40,21 +43,23 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
       setSubjects(response.data.data);
     })();
   }, []);
-
-  const handleOpen = () => setOpen(!open);
+  
   const handleOpenUpdate = () => setOpenUpdate(!openUpdate);
   const handleOpenDelete = () => setOpenDelete(!openDelete);
 
+  function handleOpen() {
+    setSubmitted(false);
+    setDescription("");
+    setOpen(!open);
+  }
+  
   async function handleModalUpdate(index: number, id: number) {
     try{
       setIndex(index);
       setId(id);
       setOpenUpdate(true);
       const response = await api.get(`subject/${id}`);
-      if(response.status === 200){
-
-
-
+      if(response.status === 200) {
         const { descricao } = response.data.data;
         setDescription(descricao);
       }
@@ -83,10 +88,15 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
       });
       const newSubject = response.data.data;
       setSubjects(prev => [...prev, newSubject]);
+      setError(false);
       setOpen(false);
     }
     catch(error) {
+      setError(true);
       console.log(error);
+    }
+    finally {
+      if(description) setOpenSnackbar(true);
     }
   }
 
@@ -132,6 +142,11 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
       setOpenDelete(false);
     }
   }
+
+  const handleClose = (_event: SyntheticEvent, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') return;
+    setOpenSnackbar(false);
+  };
 
   const columns: GridColDef<Subject>[] = useMemo(
     () => [
@@ -196,6 +211,7 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
           startIcon={<IconifyIcon icon="material-symbols:add-rounded" />}
           sx={{ flexShrink: 0 }}
           onClick={handleOpen}
+          //onClick={() => setOpenSnackbar(true)}
         >
           Assunto
         </Button>
@@ -271,6 +287,7 @@ const SubjectsTable = ({ apiRef }: SubjectsTableProps) => {
         typeDelete
         sx={{ minWidth: 400, maxWidth: 600 }}
       />
+      <ProSnackbar open={openSnackbar} onClose={handleClose} error={error} />
     </Box>
   );
 };

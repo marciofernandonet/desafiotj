@@ -7,4 +7,6 @@ public class UpdateBookDto
     public string Editora { get; set; }
     public int Edicao { get; set; }
     public string AnoPublicacao { get; set; }
+    public int AutorId { get; set; }
+    public int AssuntoId { get; set; }
 }
